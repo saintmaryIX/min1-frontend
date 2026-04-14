@@ -72,11 +72,11 @@ export class Ofertas implements OnInit {
   currentPage = signal<number>(1);
   pageSize = signal<number>(10);
 
-  paginatedOfertas = computed(() => {
+  paginatedOfertas = computed(() => { //simplemente hago paginación (no muestro todas las ofertas filtradas)
     const all = this.filteredOfertas();
     const page = this.currentPage();
     const size = this.pageSize();
-    return all.slice((page - 1) * size, page * size);
+    return all.slice((page - 1) * size, page * size); //me quedo solo con algunas de las ofertas filtradas
   });
 
   totalPages = computed(() =>

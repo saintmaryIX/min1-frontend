@@ -1,0 +1,81 @@
+@if (isOpen()) {
+  <div class="drawer-overlay" (click)="cerrar()"></div>
+
+  <aside class="drawer" [class.open]="isOpen()">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <span class="material-symbols-outlined drawer-icon">
+          {{ modoCrear ? 'playlist_add' : 'edit_note' }}
+        </span>
+        <h2>{{ titulo }}</h2>
+      </div>
+      <button (click)="cerrar()" class="btn-close-drawer" title="Cerrar">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="drawer-form" novalidate>
+      <div class="field-group" [class.invalid]="f['name'].invalid && f['name'].touched">
+        <label for="name">Nombre <span class="required">*</span></label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Ej. Ofertas Barcelona">
+        @if (f['name'].invalid && f['name'].touched) {
+          <span class="field-error">El nombre es obligatorio.</span>
+        }
+      </div>
+
+      <div class="field-group">
+        <label for="tagsText">Etiquetas</label>
+        <input
+          id="tagsText"
+          type="text"
+          formControlName="tagsText"
+          placeholder="Ej. barcelona, prioridad, >100k">
+        <span class="field-help">Sepáralas por comas.</span>
+      </div>
+
+      <div class="field-group">
+        <label>Ofertas incluidas</label>
+        <div class="offers-list">
+          @for (oferta of ofertas(); track oferta._id) {
+            <label class="offer-option">
+              <input
+                type="checkbox"
+                [checked]="estaSeleccionada(oferta._id!)"
+                (change)="toggleOferta(oferta._id!, $event)">
+              <div class="offer-option-text">
+                <span class="offer-title">{{ oferta.sector }}</span>
+                <span class="offer-meta">{{ oferta.region }} · {{ oferta.companyDescription }}</span>
+              </div>
+            </label>
+          } @empty {
+            <div class="empty-offers">No hay ofertas disponibles.</div>
+          }
+        </div>
+      </div>
+
+      @if (saveError()) {
+        <div class="save-error">
+          <span class="material-symbols-outlined">error</span>
+          {{ saveError() }}
+        </div>
+      }
+
+      <div class="drawer-footer">
+        <button type="button" (click)="cerrar()" class="btn-cancel">Cancelar</button>
+        <button type="submit" class="btn-save" [disabled]="isSaving()">
+          @if (isSaving()) {
+            <span class="material-symbols-outlined spinning">refresh</span>
+            Guardando…
+          } @else {
+            <span class="material-symbols-outlined">check</span>
+            {{ modoCrear ? 'Crear Lista' : 'Guardar Cambios' }}
+          }
+        </button>
+      </div>
+    </form>
+  </aside>
+}

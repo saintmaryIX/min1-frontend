@@ -1,0 +1,169 @@
+AI_LOG txt
+
+---------------
+
+En las instrucciones que dais sobre cómo hacer el AI_log se indica que solamente debían incluirse las consultas relevantes. Ese "relevantes" da pie a opiniones subjetivas. 
+
+Por eso, para curarme en salud, ante la duda de si es relevante o no la consulta, voy a añadirla en este documento. 
+
+Modelo IA usado: CHATGPT Instant (la versión más reciente)
+
+-------------------
+
+
+
+
+BACKEND
+
+---------------
+
+Consulta X de backend
+
+Pregunta: "ideas de campos del model".
+
+Prompt: "vale chat. quiero que me des algunas ideas sobre qué campos podría tener el model lista. recuerda que este model debe tener un nombre (el nombre de la lista), debe tener varios tags asociados (por ejemplo, Barcelona, empresa >100k...) y debe tener varias ofertas asociadas".
+
+Incoherencia: "ninguna pero me daba el campo user (para asociar un user de rol admin a cada lista creada)".
+
+Solución: "simplemente me he quedado con lo mejor de su propuesta".
+
+--------
+
+Consulta X de backend
+
+Pregunta: "sobre la documentación OPENAPI".
+
+Prompt: "vale chat. ahora genérame la documentación OPENAPI para los endpoints del documento listaRoutes.ts. sigue al pie de la letra el formato que he utilizado en el proyecto base".
+
+Incoherencia: "ninguna".
+
+Solución: "ninguna".
+
+--------------------
+
+Consulta X de backend
+
+Pregunta: "corregir sintaxis e idea de validación zod"
+
+Prompt: "chat, he hecho ya la validación zod entera en sucio. acaba de pasarme a limpio la sintaxis y corregir lo q esté mal. a continuación te adjunto mi código:
+
+const listaBaseSchema = z.object({
+  name: z.string()
+  offerIds: z.array(objectIdSchema),
+  tags: array z.string()
+
+es imprescindible q las listas q entren a la api (en el body de la req) me entren mínimo con los campos nombredelalista, las ofertas asociadas (al menos el vector, luego puede ir vacío si hace falta) y las etiquetas asociadas."
+
+Incoherencia: "ha utilizado un esquema definido campo a campo tal porque ha imitado el zod de 'solicitudValidator.ts'. en el repo q utiliza mi grupo como base para el mínimo, todos los zods excepto ese YA NO utilizan esa forma de esquema, sino una más mantenible. nuestro grupo ha decidido hacerlo de otra forma, pues así, si cambias un objeto del esquema no tienes q cambiar esto también. en el mínimo se pide coherencia con el proyecto, de modo que subrayar esto y hacer todos los zods iguales es relevante". 
+
+resultado chat
+
+export const updateListaSchema = z
+  .object({
+    name: listaNameSchema.optional(),
+    offerIds: z
+      .array(objectIdSchema)
+      .refine((values) => uniqueArray(values), 'No se pueden repetir ofertas en la misma lista')
+      .optional(),
+    tags: z
+      .array(listaTagSchema)
+      .refine((values) => uniqueArray(values), 'No se pueden repetir etiquetas en la misma lista')
+      .optional()
+  })
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'Debes enviar al menos un campo para actualizar'
+  });
+
+corrección
+
+export const updateListaSchema = listaBaseSchema
+  .partial()
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'Debes enviar al menos un campo para actualizar'
+  });
+
+----------------------
+
+
+
+
+
+FRONTEND
+
+----------------
+
+Consulta X de frontend
+
+Pregunta: "esbozo de HTML y css del componente listas padre y listas hijo (form+drawer)".
+
+Prompt: "oye chat, dame un esbozo/planteamiento de cómo debería verse el css y el HTML del componente lista. quiero que me hagas un hijo y un padre. el hijo tiene q tener todo lo respectivo al formulario y el drawer. el padre puede tener los títulos, botones y lo de paginación. quiero que lo hagas con la sintaxis moderna de angular. en el ts utilizaré los signals y computed para q cuando escribas en el buscador se vaya triggereando el evento
+
+Incoherencia: "ninguna"
+
+Solución: "ninguna".
+
+----------
+
+Consulta X de frontend
+
+Pregunta: "asociación URL-componente en approutes".
+
+Prompt: "mete en approutes la línea de código q asocia el path /listas con el componente ListasAdminComponent. ponlo como componente hijo del padre que es AdminLayoutComponent.
+
+Incoherencia: "ninguna".
+
+Solución: "ninguna".
+
+---------------------------
+
+Consulta X de frontend
+
+Pregunta: "sobre el service y los omits".
+
+Prompts: "revisa la sintaxis y los utility types que he definido en este service: "
+
+Incoherencia: "el código que me ha dado la IA en sí funciona, pero no sigue la coherencia del proyecto. nuestro grupo decidió hacer un export del model (las interfaces de ts) completo y luego en los create hacer omit del campo id. establecimos que sería mongoose en el backend quien se ocuparía de fijar los ids a los documentos que se crean. por eso queremos forzar con ts que te marqué error si desde frontend pretendes enviar id. ese omit lo hacemos siempre en el service, pasándole el esquema entero. chatgpt lo que ha hecho ha sido exportar un dto desde models (exporta ya con el omit) y luego se lo ahorra en el service. esto NO sigue la coherencia de nuestro proyecto".
+
+resultado chat models:
+
+export type CreateListaDto = Omit<Lista, '_id'>;
+export type UpdateListaDto = Partial<CreateListaDto>;
+
+chat service:
+
+createLista(data: CreateListaDto): Observable<Lista> {
+  return this.http.post<Lista>(this.apiUrl, data);
+}
+
+updateLista(id: string, data: UpdateListaDto): Observable<Lista> {
+  return this.http.put<Lista>(`${this.apiUrl}/${id}`, data);
+}
+
+corrección
+
+export de models sin omit y en el service:
+
+createLista(data: Omit<Lista, '_id'>): Observable<Lista> {
+    return this.http.post<Lista>(this.apiUrl, data);
+  }
+
+--------------
+
+Consulta X de frontend
+
+Pregunta: "revisión final de sintaxis y coherencia con el proyecto"
+
+Prompt: "para terminar, quiero que me hagas una revisión completa del proyecto. encuentra bugs, ideas que haya aplicado que no sean coherentes con el enunciado... incoherencias con el proyecto base (naming, imports, estructura...). Si detectas algo, corrígelo.
+
+Incoherencia: "ninguna"
+
+Solución: "ninguna"
+
+--------------------
+
+
+
+
+

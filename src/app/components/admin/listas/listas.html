@@ -1,0 +1,145 @@
+<div class="users-page">
+  <div class="page-header">
+    <div class="title-section">
+      <h1>Maneja tus listas</h1>
+      <p class="subtitle">Organiza ofertas en listas personalizadas</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="fetchListas()" class="btn-reload" [class.spinning]="isLoading()" title="Recargar">
+        <span class="material-symbols-outlined">refresh</span>
+      </button>
+      <button (click)="abrirCrear()" class="btn-primary">
+        <span class="material-symbols-outlined">playlist_add</span>
+        Añadir Lista
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <app-search-input
+      [placeholder]="'Buscar por nombre o etiqueta...'"
+      (onSearch)="updateSearch($event)">
+    </app-search-input>
+  </div>
+
+  @if (isLoading()) {
+    <div class="state-container">
+      <div class="loader"></div>
+      <p>Cargando listas...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-container error">
+      <span class="material-symbols-outlined">error</span>
+      <p>{{ error() }}</p>
+      <button (click)="fetchListas()" class="btn-retry">Reintentar</button>
+    </div>
+  } @else {
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Lista</th>
+            <th>Etiquetas</th>
+            <th>Ofertas</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (lista of paginatedListas(); track lista._id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="avatar-mini">
+                    {{ lista.name.charAt(0) }}
+                  </div>
+                  <div class="user-info-text">
+                    <span class="name">{{ lista.name }}</span>
+                    <span class="bio-snippet">Lista personalizada de ofertas</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="tag-list">
+                  @for (tag of lista.tags; track tag) {
+                    <span class="badge tag-badge">{{ tag }}</span>
+                  } @empty {
+                    <span class="text-muted">Sin etiquetas</span>
+                  }
+                </div>
+              </td>
+              <td>{{ lista.offerIds.length }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button (click)="abrirEditar(lista)" class="btn-icon" title="Editar">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button (click)="confirmarEliminar(lista._id!)" class="btn-icon" title="Eliminar">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <span class="material-symbols-outlined">search_off</span>
+                  <p>No se han encontrado listas que coincidan con la búsqueda.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="pagination-footer">
+        <div class="pagination-info">
+          Mostrando
+          <strong>{{ pageStart() }}–{{ pageEnd() }}</strong>
+          de <strong>{{ filteredListas().length }}</strong> listas
+        </div>
+
+        <div class="pagination-controls">
+          <div class="page-size-selector">
+            <span>Filas:</span>
+            <select (change)="pageSize.set(+$any($event.target).value); currentPage.set(1)" class="page-size-select">
+              <option value="5" [selected]="pageSize() === 5">5</option>
+              <option value="10" [selected]="pageSize() === 10">10</option>
+              <option value="20" [selected]="pageSize() === 20">20</option>
+            </select>
+          </div>
+
+          <div class="page-buttons">
+            <button (click)="prevPage()" [disabled]="currentPage() === 1" class="btn-page btn-page-arrow">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+
+            @for (page of pageNumbers(); track $index) {
+              @if (page === -1) {
+                <span class="page-ellipsis">…</span>
+              } @else {
+                <button
+                  (click)="goToPage(page)"
+                  class="btn-page"
+                  [class.active]="currentPage() === page">
+                  {{ page }}
+                </button>
+              }
+            }
+
+            <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="btn-page btn-page-arrow">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<app-lista-form
+  [isOpen]="drawerOpen()"
+  [lista]="drawerLista()"
+  (saved)="onListaGuardada($event)"
+  (closed)="cerrarDrawer()">
+</app-lista-form>

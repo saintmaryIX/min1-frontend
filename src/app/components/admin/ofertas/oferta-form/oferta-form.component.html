@@ -16,7 +16,6 @@
 
     <form [formGroup]="form" (ngSubmit)="guardar()" class="drawer-form" novalidate>
 
-      <!-- Sector -->
       <div class="field-group" [class.invalid]="f['sector'].invalid && f['sector'].touched">
         <label for="sector">Sector <span class="required">*</span></label>
         <select id="sector" formControlName="sector" class="form-select">
@@ -31,7 +30,6 @@
         }
       </div>
 
-      <!-- Región -->
       <div class="field-group" [class.invalid]="f['region'].invalid && f['region'].touched">
         <label for="region">Región <span class="required">*</span></label>
         <input id="region" type="text" formControlName="region" placeholder="Ej. Barcelona, Madrid...">
@@ -40,7 +38,6 @@
         }
       </div>
 
-      <!-- Facturación (Revenue Range) -->
       <div class="field-group">
         <label for="revenueRange">Rango de Facturación</label>
         <select id="revenueRange" formControlName="revenueRange" class="form-select">
@@ -53,7 +50,6 @@
         </select>
       </div>
 
-      <!-- Empleados -->
       <div class="field-group">
         <label for="employeeRange">Rango de Empleados</label>
         <select id="employeeRange" formControlName="employeeRange" class="form-select">
@@ -67,13 +63,11 @@
         </select>
       </div>
 
-      <!-- Antigüedad -->
       <div class="field-group">
         <label for="businessAgeYears">Años de Antigüedad</label>
         <input id="businessAgeYears" type="number" formControlName="businessAgeYears" min="0">
       </div>
       
-      <!-- Propietario -->
       <div class="field-group" [class.invalid]="f['owner'].invalid && f['owner'].touched">
         <label for="owner">Propietario <span class="required">*</span></label>
         <select id="owner" formControlName="owner" class="form-select">
@@ -87,13 +81,38 @@
         }
       </div>
 
-      <!-- Descripción -->
       <div class="field-group" [class.invalid]="f['companyDescription'].invalid && f['companyDescription'].touched">
         <label for="companyDescription">Descripción de la Empresa <span class="required">*</span></label>
         <textarea id="companyDescription" formControlName="companyDescription" rows="5" placeholder="Cuéntanos sobre el negocio..."></textarea>
         @if (f['companyDescription'].invalid && f['companyDescription'].touched) {
           <span class="field-error">La descripción es obligatoria (mín. 10 chars).</span>
         }
+      </div>
+
+      <div class="field-group">
+        <label>Listas</label>
+        <div class="offers-list">
+          @for (lista of listas(); track lista._id) {
+            <label class="offer-option">
+              <input
+                type="checkbox"
+                [checked]="estaListaSeleccionada(lista._id!)"
+                (change)="toggleLista(lista._id!, $event)">
+              <div class="offer-option-text">
+                <span class="offer-title">{{ lista.name }}</span>
+                <span class="offer-meta">
+                  @if (lista.tags.length > 0) {
+                    {{ lista.tags.join(', ') }}
+                  } @else {
+                    Sin etiquetas
+                  }
+                </span>
+              </div>
+            </label>
+          } @empty {
+            <div class="empty-offers">No hay listas disponibles.</div>
+          }
+        </div>
       </div>
 
       @if (saveError()) {
